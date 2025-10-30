@@ -21,6 +21,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Create a non-root user for security
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 RUN groupadd -r spring && useradd -r -g spring spring
 
 # Copy the jar from build stage
@@ -42,7 +43,7 @@ EXPOSE 8080
 # when the application responds. If you prefer actuator, add `spring-boot-starter-actuator`
 # to `pom.xml` and restore the actuator health endpoint.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/tutorials || exit 1
+  CMD curl -f http://localhost:8080/api/tutorials || exit 1
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
