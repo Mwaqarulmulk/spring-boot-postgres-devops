@@ -36,8 +36,13 @@ USER spring
 EXPOSE 8080
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
+# Use the application endpoint available in this project. The original Dockerfile used
+# /actuator/health but the project does not include the actuator dependency by default.
+# We change the healthcheck to hit the public API endpoint so the container reports healthy
+# when the application responds. If you prefer actuator, add `spring-boot-starter-actuator`
+# to `pom.xml` and restore the actuator health endpoint.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/tutorials || exit 1
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
