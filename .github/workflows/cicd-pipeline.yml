@@ -2,15 +2,15 @@ name: DevOps CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 env:
-  DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/spring-boot-postgres-app
-  JAVA_VERSION: '17'
-  MAVEN_VERSION: '3.8.5'
+  DOCKER_IMAGE_NAME: ${{ secrets.waqarulmulk }}/spring-boot-postgres-app
+  JAVA_VERSION: "17"
+  MAVEN_VERSION: "3.8.5"
 
 jobs:
   # ==========================================
@@ -28,8 +28,8 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
-          cache: 'maven'
+          distribution: "temurin"
+          cache: "maven"
 
       - name: 📦 Cache Maven Dependencies
         uses: actions/cache@v3
@@ -69,8 +69,8 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
-          cache: 'maven'
+          distribution: "temurin"
+          cache: "maven"
 
       - name: 📦 Cache Maven Dependencies
         uses: actions/cache@v3
@@ -98,12 +98,12 @@ jobs:
       - name: 🔒 Trivy Security Scan - Filesystem
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: './bezkoder-app'
-          format: 'table'
-          exit-code: '0'
+          scan-type: "fs"
+          scan-ref: "./bezkoder-app"
+          format: "table"
+          exit-code: "0"
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+          severity: "CRITICAL,HIGH"
 
       - name: 📊 Generate Security Report
         run: |
@@ -144,8 +144,8 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
-          cache: 'maven'
+          distribution: "temurin"
+          cache: "maven"
 
       - name: 📦 Cache Maven Dependencies
         uses: actions/cache@v3
@@ -237,10 +237,10 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.DOCKER_IMAGE_NAME }}:latest
-          format: 'table'
-          exit-code: '0'
+          format: "table"
+          exit-code: "0"
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+          severity: "CRITICAL,HIGH"
 
       - name: 📊 Docker Build Summary
         run: |
@@ -357,7 +357,13 @@ jobs:
   pipeline-summary:
     name: 📊 Pipeline Summary
     runs-on: ubuntu-latest
-    needs: [build-and-install, lint-and-security, test-with-database, build-docker-image]
+    needs:
+      [
+        build-and-install,
+        lint-and-security,
+        test-with-database,
+        build-docker-image,
+      ]
     if: always()
 
     steps:
