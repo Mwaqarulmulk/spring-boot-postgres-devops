@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  postgresdb:
+    image: postgres:15-alpine
+    container_name: bezkoder-postgres
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - POSTGRES_USER=${POSTGRESDB_USER}
+      - POSTGRES_PASSWORD=${POSTGRESDB_ROOT_PASSWORD}
+      - POSTGRES_DB=${POSTGRESDB_DATABASE}
+    ports:
+      - "${POSTGRESDB_LOCAL_PORT}:${POSTGRESDB_DOCKER_PORT}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - spring-postgres-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRESDB_USER} -d ${POSTGRESDB_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  app:
+    build:
+      context: ./bezkoder-app
+      dockerfile: Dockerfile
+    container_name: bezkoder-spring-app
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+    restart: on-failure
+    env_file: ./.env
+    ports:
+      - "${SPRING_LOCAL_PORT}:${SPRING_DOCKER_PORT}"
+    environment:
+      SPRING_APPLICATION_JSON: '{
+        "spring.datasource.url": "jdbc:postgresql://postgresdb:${POSTGRESDB_DOCKER_PORT}/${POSTGRESDB_DATABASE}",
+        "spring.datasource.username": "${POSTGRESDB_USER}",
+        "spring.datasource.password": "${POSTGRESDB_ROOT_PASSWORD}",
+        "spring.jpa.properties.hibernate.dialect": "org.hibernate.dialect.PostgreSQLDialect",
+        "spring.jpa.hibernate.ddl-auto": "update",
+        "spring.jpa.show-sql": "true"
+      }'
+    networks:
+      - spring-postgres-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/tutorials"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  spring-postgres-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
