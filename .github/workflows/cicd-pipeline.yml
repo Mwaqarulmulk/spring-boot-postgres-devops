@@ -96,7 +96,8 @@ jobs:
         continue-on-error: true
 
       - name: 🔒 Trivy Security Scan - Filesystem
-        uses: aquasecurity/trivy-action@master
+        # Pin Trivy to a stable tag to avoid unexpected breakage from the `master` branch
+        uses: aquasecurity/trivy-action@v0.36.3
         with:
           scan-type: "fs"
           scan-ref: "./bezkoder-app"
@@ -234,7 +235,8 @@ jobs:
             VCS_REF=${{ github.sha }}
 
       - name: 🔒 Trivy Security Scan - Docker Image
-        uses: aquasecurity/trivy-action@master
+        # Pin Trivy to a stable tag to avoid unexpected breakage from the `master` branch
+        uses: aquasecurity/trivy-action@v0.36.3
         with:
           image-ref: ${{ env.DOCKER_IMAGE_NAME }}:latest
           format: "table"
